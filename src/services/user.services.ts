@@ -8,5 +8,8 @@ export async function getAllUsers() {
 
 export async function getUserById(id: number) {
     const user = await getById(id)
-    return user
+    if (!user) {
+        throw new Error(`User with id ${id} not found`)
+    }
+    return user;
 }
