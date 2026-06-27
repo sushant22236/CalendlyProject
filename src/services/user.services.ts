@@ -1,5 +1,7 @@
-import {getAll, getById} from '../repositories/user.respositories'
+import {create, findByEmail, getAll, getById} from '../repositories/user.respositories'
 import { notFound } from '../utils/api.error'
+import { CreateUserDto } from '../dtos/user.dto'
+import { conflict } from '../utils/api.error'
 
 
 export async function getAllUsers() {   
@@ -13,4 +15,14 @@ export async function getUserById(id: number) {
         throw notFound('User not found ')
     }
     return user;
+}
+
+export async function createUser(data: CreateUserDto) {
+    
+    const existingUser = await findByEmail(data.email)
+    if(existingUser){
+        throw conflict('User with this email already exists')
+    }
+    const user = await create(data)
+    return user
 }
