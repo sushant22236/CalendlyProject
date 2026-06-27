@@ -1,5 +1,30 @@
 import { Request, Response, NextFunction } from "express";
+import { ApiError } from "../utils/api.error";
+import { NODE_ENV } from "../config/env";
 
-export function errorHandler(_err: Error, _req: Request, res: Response, _next: NextFunction) {
-    res.json({message: "something went wrong",})
+export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction) {
+
+    if(err instanceof ApiError) {
+        const body: Record<string, unknown> = {
+            success: false,
+            message: err.message,
+        }
+        if(err.details) body.details = err.details;
+        res.status(err.statusCode).json(body);
+        return;
+    }
+
+    console.error("[ERROR] ", err);
+
+    const body: Record<string, unknown> = {
+        success: false,
+        message: "something went wrong",
+    }
+
+    if(NODE_ENV === 'development') body.details = err.stack;
+
+    res.status(500).json(body);
+
 }
+
+    
