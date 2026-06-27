@@ -17,3 +17,8 @@ export async function getUserByIdController(req: Request, res: Response) {
     const response = await getUserById(Number(id))
     sendSuccess(res, response)
 }
+
+export async function createUser(req: Request, res: Response) {
+    console.log('Create user request body:', req.body);
+    res.json({})
+}
