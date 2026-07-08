@@ -1,5 +1,5 @@
 import {Request, Response} from 'express'
-import {getAllUsers, getUserById, createUser} from '../services/user.services'
+import {getAllUsers, getUserById, createUser, updateUser, deleteUser} from '../services/user.services'
 import { sendSuccess } from '../utils/api.response'
 
 export async function getAllUsersController(req: Request, res: Response) {
@@ -22,4 +22,16 @@ export async function createUserController(req: Request, res: Response) {
     console.log('Create user request body:', req.body);
     const newUser = await createUser(req.body);
     sendSuccess(res, newUser, 201, 'User created successfully');
+}
+
+export async function updateUserController(req: Request, res: Response) {
+    const { id } = req.params;
+    const updatedUser = await updateUser(Number(id), req.body);
+    sendSuccess(res, updatedUser, 200, 'User updated successfully');
+}
+
+export async function deleteUserController(req: Request, res: Response) {
+    const { id } = req.params;
+    const deletedUser = await deleteUser(Number(id));
+    sendSuccess(res, deletedUser, 200, 'User deleted successfully');
 }
