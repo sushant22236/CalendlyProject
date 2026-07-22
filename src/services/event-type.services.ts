@@ -4,13 +4,13 @@ import { CreateEventTypeDto, UpdateEventTypeDto } from '../dtos/event-type.dto';
 import slug from "slug";
 import { getUserById } from './user.services';
 
-export async function getEventTypesByHostId(hostId: number) {
+export async function getEventByHostId(hostId: number) {
     const eventTypes = await findByHostId(hostId);
     return eventTypes;
 }
 
 
-export async function createEventType(hostId: number, data: CreateEventTypeDto) {
+export async function createEvent(hostId: number, data: CreateEventTypeDto) {
     const slugPassed = data.slug ?? slug(data.title, {lower: true});
     if(!slugPassed){
         throw conflict('Slug is required for event type');
@@ -24,7 +24,7 @@ export async function createEventType(hostId: number, data: CreateEventTypeDto) 
     return create(hostId, {...data, slug: slugPassed});
 }
 
-export async function updateEventType(id: number, data: UpdateEventTypeDto) {
+export async function updateEvent(id: number, data: UpdateEventTypeDto) {
     const eventType = await update(id, data);
     if (!eventType) {
         throw notFound('Event type not found');
@@ -32,7 +32,7 @@ export async function updateEventType(id: number, data: UpdateEventTypeDto) {
     return eventType;
 }
 
-export async function deleteEventType(hostId: number, id: number) {
+export async function deleteEvent(hostId: number, id: number) {
     const eventType = await getById(id);
     if (!eventType) {
         throw notFound('Event type not found');
@@ -44,6 +44,17 @@ export async function deleteEventType(hostId: number, id: number) {
 
     const deletedEventType = await remove(id);
     return deletedEventType;
+}
+
+export async function getEventById(id: number, hostId: number) {
+    const eventType = await getById(id);
+    if (!eventType) {
+        throw notFound('Event type not found');
+    }
+    if (eventType.hostId !== hostId) {
+        throw forbidden('You are not authorized to view this event type');
+    }
+    return eventType;
 }
 
 export async function getEventByPublic(hostId: number, slug: string) {
