@@ -1,5 +1,5 @@
-import {Request, Response} from 'express'
-import {getAllUsers, getUserById, createUser, updateUser, deleteUser} from '../services/user.services'
+import { Request, Response } from 'express'
+import { getAllUsers, getUserById, createUser, updateUser, deleteUser } from '../services/user.services'
 import { sendSuccess } from '../utils/api.response'
 
 export async function getAllUsersController(req: Request, res: Response) {
@@ -13,7 +13,7 @@ export async function getAllUsersController(req: Request, res: Response) {
 }
 
 export async function getUserByIdController(req: Request, res: Response) {
-    const {id} = req.params
+    const { id } = req.params
     const response = await getUserById(Number(id))
     sendSuccess(res, response)
 }
