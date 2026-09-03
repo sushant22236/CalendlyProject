@@ -1,6 +1,5 @@
 import {prisma} from '../config/database'
 import {CreateEventTypeDto, UpdateEventTypeDto} from '../dtos/event-type.dto'
-import { notFound } from '../utils/api.error';
 
 export async function findByHostId(hostId: number) {
     const eventTypes = await prisma.eventType.findMany({
