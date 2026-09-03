@@ -20,7 +20,7 @@ export async function createEventController(req: Request, res: Response) {
 
 export async function updateEventController(req: Request, res: Response) {
     const { id } = req.params
-    const eventTypes = await updateEvent(Number(id), req.userId, req.body)
+    const eventTypes = await updateEvent(req.userId, Number(id), req.body)
     sendSuccess(res, eventTypes, 200, "event type updated successfully");
 }
 

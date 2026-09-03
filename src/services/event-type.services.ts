@@ -24,12 +24,22 @@ export async function createEvent(hostId: number, data: CreateEventTypeDto) {
     return create(hostId, {...data, slug: slugPassed});
 }
 
-export async function updateEvent(id: number, data: UpdateEventTypeDto) {
-    const eventType = await update(id, data);
+export async function updateEvent(hostId: number, id: number, data: UpdateEventTypeDto) {
+    const eventType = await getById(id);
     if (!eventType) {
         throw notFound('Event type not found');
     }
-    return eventType;
+    if (eventType.hostId !== hostId) {
+        throw forbidden('You are not authorized to update this event type');
+    }
+    if(data.slug && data.slug !== eventType.slug){
+        const isSlugTaken = await slugExistForHost(hostId, data.slug);
+        if (isSlugTaken) {
+            throw conflict('Slug already exists for this host, please use a different slug');
+        }
+    }
+    const updatedEventType = await update(id, data);
+    return updatedEventType;
 }
 
 export async function deleteEvent(hostId: number, id: number) {
@@ -57,7 +67,7 @@ export async function getEventById(id: number, hostId: number) {
     return eventType;
 }
 
-export async function getEventByPublic(hostId: number, slug: string) {
+export async function getEventPublic(hostId: number, slug: string) {
     const eventType = await findByHostAndSlug(hostId, slug);
     if (!eventType) {
         throw notFound('Event type not found');

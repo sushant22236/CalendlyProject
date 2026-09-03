@@ -8,9 +8,9 @@ const router = Router()
 
 router.get('/users', getAllUsersController)
 router.get('/users/:id', getUserByIdController)
-router.post('/create-user', validate(createUserSchema), createUserController)
-router.patch('/update-user/:id', validate(updateUserSchema), updateUserController)
-router.delete('/delete-user/:id', deleteUserController)
+router.post('/users', validate(createUserSchema), createUserController)
+router.patch('/users/:id', validate(updateUserSchema), updateUserController)
+router.delete('/users/:id', deleteUserController)
 
 
 export default router
