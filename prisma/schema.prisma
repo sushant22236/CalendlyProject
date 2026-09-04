@@ -15,35 +15,40 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String
-  slug      String   @unique
-  timezone  String   @default("UTC")
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  name     String
+  slug     String @unique
+  timezone String @default("UTC")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   eventTypes             EventType[] // One-to-many relationship with EventType
   availabilityRules      AvailabilityRule[] // One-to-many relationship with AvailabilityRule
   availabilityExceptions AvailabilityExceptions[] // One-to-many relationship with AvailabilityExceptions
+  slot                   Slot[]
 
   @@map("users") // Maps this model to the "users" table in the database
 }
 
 model EventType {
-  id                  Int      @id @default(autoincrement())
+  id                  Int     @id @default(autoincrement())
   hostId              Int
   title               String
   description         String?
   slug                String
   durationMinutes     Int
-  isActive            Boolean  @default(true)
-  locationType        String   @default("online") // Default value set to "online"
+  isActive            Boolean @default(true)
+  locationType        String  @default("online") // Default value set to "online"
   locationValue       String?
-  bufferBeforeMinutes Int      @default(0)
-  bufferAfterMinutes  Int      @default(0)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  bufferBeforeMinutes Int     @default(0)
+  bufferAfterMinutes  Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  slot Slot[]
 
   host User @relation(fields: [hostId], references: [id], onDelete: Cascade) // Many-to-one relationship with User
 
@@ -52,12 +57,13 @@ model EventType {
 }
 
 model AvailabilityRule {
-  id        Int      @id @default(autoincrement())
+  id        Int    @id @default(autoincrement())
   userId    Int
   dayOfWeek Int // 0-6 (Sunday-Saturday)
   startTime String // "09:00" format
   endTime   String // "17:00" format
-  timezone  String   @default("UTC")
+  timezone  String @default("UTC")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -76,6 +82,7 @@ model AvailabilityExceptions {
   endTime   String? // "17:00" format
   timezone  String   @default("UTC")
   reason    String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -83,4 +90,24 @@ model AvailabilityExceptions {
 
   @@index([userId, date]) // Ensures that the combination of userId and date is unique
   @@map("availability_exceptions")
+}
+
+model Slot {
+  id          Int      @id @default(autoincrement())
+  hostId      Int
+  eventTypeId Int
+  startAt     DateTime
+  endAt       DateTime
+  status      String   @default("available") // available, confirmed, cancelled
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  host      User      @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  eventType EventType @relation(fields: [eventTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([eventTypeId, startAt, endAt])
+  @@index([hostId, startAt])
+  @@index([eventTypeId, startAt, status])
+  @@map("slot")
 }
