@@ -28,6 +28,7 @@ model User {
   availabilityRules      AvailabilityRule[] // One-to-many relationship with AvailabilityRule
   availabilityExceptions AvailabilityExceptions[] // One-to-many relationship with AvailabilityExceptions
   slot                   Slot[]
+  bookings               Booking[]                @relation("HostBookings")
 
   @@map("users") // Maps this model to the "users" table in the database
 }
@@ -48,7 +49,8 @@ model EventType {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  slot Slot[]
+  slot     Slot[]
+  bookings Booking[]
 
   host User @relation(fields: [hostId], references: [id], onDelete: Cascade) // Many-to-one relationship with User
 
@@ -103,6 +105,8 @@ model Slot {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  bookings Booking[]
+
   host      User      @relation(fields: [hostId], references: [id], onDelete: Cascade)
   eventType EventType @relation(fields: [eventTypeId], references: [id], onDelete: Cascade)
 
@@ -110,4 +114,30 @@ model Slot {
   @@index([hostId, startAt])
   @@index([eventTypeId, startAt, status])
   @@map("slot")
+}
+
+model Booking {
+  id              Int       @id @default(autoincrement())
+  hostId          Int
+  eventTypeId     Int
+  slotId          Int
+  inviteeEmail    String
+  inviteeNotes    String?
+  inviteeName     String
+  status          String    @default("pending") // pending, confirmed, cancelled, rescheduling
+  meetLink        String?
+  calendarEventId String?
+  cancelledAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  host      User      @relation("HostBookings", fields: [hostId], references: [id], onDelete: Cascade)
+  eventType EventType @relation(fields: [eventTypeId], references: [id], onDelete: Cascade)
+  slot      Slot      @relation(fields: [slotId], references: [id], onDelete: Cascade)
+
+  @@unique([status])
+  @@index([inviteeEmail])
+  @@index([hostId, createdAt])
+  @@map("bookings")
 }
