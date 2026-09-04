@@ -23,8 +23,9 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  eventTypes        EventType[] // One-to-many relationship with EventType
-  availabilityRules AvailabilityRule[] // One-to-many relationship with AvailabilityRule
+  eventTypes             EventType[] // One-to-many relationship with EventType
+  availabilityRules      AvailabilityRule[] // One-to-many relationship with AvailabilityRule
+  availabilityExceptions AvailabilityExceptions[] // One-to-many relationship with AvailabilityExceptions
 
   @@map("users") // Maps this model to the "users" table in the database
 }
@@ -64,4 +65,22 @@ model AvailabilityRule {
 
   @@index([userId, dayOfWeek]) // Ensures that the combination of userId and dayOfWeek is unique
   @@map("availability_rules")
+}
+
+model AvailabilityExceptions {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  date      DateTime @db.Date
+  type      String // "block" or "available"
+  startTime String? // "09:00" format
+  endTime   String? // "17:00" format
+  timezone  String   @default("UTC")
+  reason    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date]) // Ensures that the combination of userId and date is unique
+  @@map("availability_exceptions")
 }
