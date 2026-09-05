@@ -1,29 +1,31 @@
-import {create, findByEmail, getAll, getById, update, remove} from '../repositories/user.respositories'
+import { create, findByEmail, getAll, getById, update, remove } from '../repositories/user.respositories'
 import { notFound } from '../utils/api.error'
 import { CreateUserDto } from '../dtos/user.dto'
 import { conflict } from '../utils/api.error'
+import slug from 'slug';
 
 
-export async function getAllUsers() {   
+export async function getAllUsers() {
     const users = await getAll()
     return users
 }
 
 export async function getUserById(id: number) {
     const user = await getById(id)
-    if(!user) {
+    if (!user) {
         throw notFound('User not found ')
     }
     return user;
 }
 
-export async function createUser(data: CreateUserDto) {
-    
+export async function createUser(data: CreateUserDto & { slug: string }) {
+
     const existingUser = await findByEmail(data.email)
-    if(existingUser){
+    if (existingUser) {
         throw conflict('User with this email already exists')
     }
-    const user = await create(data)
+    const slugPassed = data.slug ? data.slug : slug(data.name, { lower: true });
+    const user = await create({ ...data, slug: slugPassed })
     return user
 }
 
@@ -33,9 +35,9 @@ export async function updateUser(id: number, data: Partial<CreateUserDto>) {
         throw notFound('User not found')
     }
 
-    if(data.email && data.email !== user.email) {
+    if (data.email && data.email !== user.email) {
         const existingUser = await findByEmail(data.email)
-        if(existingUser){
+        if (existingUser) {
             throw conflict('User with this email already exists')
         }
     }
@@ -45,7 +47,7 @@ export async function updateUser(id: number, data: Partial<CreateUserDto>) {
 }
 
 export async function deleteUser(id: number) {
-    const user = await getById(id)  
+    const user = await getById(id)
     if (!user) {
         throw notFound('User not found')
     }
