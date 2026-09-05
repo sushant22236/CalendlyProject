@@ -28,6 +28,14 @@ export async function getByUserId(userId: number) {
     return rules;
 }
 
+export async function getActiveByUserId(userId: number) {
+    const rules = await prisma.availabilityRule.findMany({
+        where: { userId, isActive: true },
+        orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }]
+    });
+    return rules;
+}
+
 export async function create(userId: number, data: CreateAvailabilityRuleDto) {
     const rule = await prisma.availabilityRule.create({
         data: {
@@ -74,17 +82,26 @@ export async function getExceptionsByUserId(userId: number) {
     return exceptions;
 }
 
-export async function createException(data: CreateAvailabilityExceptionDto) {
+export async function createException(userId: number, data: CreateAvailabilityExceptionDto) {
+    const { date, ...rest } = data;
     const exception = await prisma.availabilityExceptions.create({
-        data
+        data: {
+            userId,
+            ...rest,
+            date: new Date(`${date}T00:00:00.000Z`)
+        }
     });
     return exception;
 }
 
 export async function updateException(id: number, data: UpdateAvailabilityExceptionDto) {
+    const { date, ...rest } = data;
     const exception = await prisma.availabilityExceptions.update({
         where: { id },
-        data
+        data: {
+            ...rest,
+            ...(date !== undefined && { date: new Date(`${date}T00:00:00.000Z`) })
+        }
     });
     return exception;
 }
