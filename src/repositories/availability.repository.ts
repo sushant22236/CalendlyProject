@@ -23,7 +23,7 @@ export async function getById(id: number) {
 export async function getByUserId(userId: number) {
     const rules = await prisma.availabilityRule.findMany({
         where: { userId },
-        orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }]
+        orderBy: [{ weekday: 'asc' }, { startTime: 'asc' }]
     });
     return rules;
 }
@@ -31,7 +31,7 @@ export async function getByUserId(userId: number) {
 export async function getActiveByUserId(userId: number) {
     const rules = await prisma.availabilityRule.findMany({
         where: { userId, isActive: true },
-        orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }]
+        orderBy: [{ weekday: 'asc' }, { startTime: 'asc' }]
     });
     return rules;
 }
