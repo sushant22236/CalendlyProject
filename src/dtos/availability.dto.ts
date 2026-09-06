@@ -3,8 +3,7 @@ import { z } from 'zod';
 // --- Availability Rule DTOs ---
 
 const baseAvailabilityRuleSchema = z.object({
-  userId: z.number().int().positive("userId must be a positive integer"),
-  dayOfWeek: z.number().int().min(0).max(6, "dayOfWeek must be between 0 (Sunday) and 6 (Saturday)"),
+  weekday: z.number().int().min(0).max(6, "dayOfWeek must be between 0 (Sunday) and 6 (Saturday)"),
   startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format. Use HH:MM (e.g. 09:00)"),
   endTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format. Use HH:MM (e.g. 17:00)"),
   isActive: z.boolean().optional().default(true),
@@ -31,7 +30,6 @@ export type UpdateAvailabilityRuleDto = z.infer<typeof updateAvailabilityRuleSch
 // --- Availability Exceptions DTOs ---
 
 const baseAvailabilityExceptionSchema = z.object({
-  userId: z.number().int().positive("userId must be a positive integer"),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format. Use YYYY-MM-DD"),
   type: z.enum(["BLOCK_FULL_DAY", "BLOCK_PARTIAL", "ADD_AVAILABLE_WINDOW"], { errorMap: () => ({ message: "Type must be 'BLOCK_FULL_DAY', 'BLOCK_PARTIAL', or 'ADD_AVAILABLE_WINDOW'" }) }),
   startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format. Use HH:MM (e.g. 09:00)").optional(),
@@ -67,7 +65,7 @@ export const updateAvailabilityExceptionSchema = baseAvailabilityExceptionSchema
   if (data.startTime && data.endTime && data.startTime >= data.endTime) {
     ctx.addIssue({ path: ['startTime'], code: 'custom', message: "Start time must be less than end time" });
   }
-  
+
   if (data.type === 'BLOCK_FULL_DAY') {
     if (data.startTime) {
       ctx.addIssue({ path: ['startTime'], code: 'custom', message: "Start time is not required for full day block" });
