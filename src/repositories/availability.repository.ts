@@ -126,3 +126,6 @@ export async function findExceptionsByUserInRange(userId: number, startDate: str
     });
     return exceptions;
 }
+
+
+

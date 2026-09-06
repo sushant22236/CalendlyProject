@@ -1,22 +1,22 @@
-import {prisma} from '../config/database'
-import {CreateEventTypeDto, UpdateEventTypeDto} from '../dtos/event-type.dto'
+import { prisma } from '../config/database'
+import { CreateEventTypeDto, UpdateEventTypeDto } from '../dtos/event-type.dto'
 
 export async function findByHostId(hostId: number) {
     const eventTypes = await prisma.eventType.findMany({
-        where: {hostId},
-        orderBy: {createdAt: 'desc'},
+        where: { hostId },
+        orderBy: { createdAt: 'desc' },
     });
     return eventTypes;
 }
 
 export async function getById(id: number) {
     const eventType = await prisma.eventType.findUnique({
-        where: {id},
+        where: { id },
     });
     return eventType;
 }
 
-export async function create(hostId: number, data: CreateEventTypeDto & {slug: string}) {
+export async function create(hostId: number, data: CreateEventTypeDto & { slug: string }) {
     const eventType = await prisma.eventType.create({
         data: {
             ...data,
@@ -26,17 +26,17 @@ export async function create(hostId: number, data: CreateEventTypeDto & {slug: s
     return eventType;
 }
 
-export async function update(id: number, data: UpdateEventTypeDto){
+export async function update(id: number, data: UpdateEventTypeDto) {
     const eventType = await prisma.eventType.update({
-        where: {id},
+        where: { id },
         data
     });
     return eventType;
-} 
+}
 
-export async function remove(id: number){
+export async function remove(id: number) {
     const eventType = await prisma.eventType.delete({
-        where: {id}
+        where: { id }
     });
     return eventType;
 }
@@ -71,4 +71,14 @@ export async function slugExistForHost(hostId: number, slug: string) {
         }
     });
     return eventType !== null;
-} 
+}
+
+export async function findActiveEventByHost(hostId: number) {
+    const events = await prisma.eventType.findMany({
+        where: {
+            hostId,
+            isActive: true
+        }
+    });
+    return events;
+}
