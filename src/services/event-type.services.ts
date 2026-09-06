@@ -1,4 +1,4 @@
-import { create, findByHostId, getById, update, remove, slugExistForHost, findByHostAndSlug } from '../repositories/event-type.respositories';
+import { create, findByHostId, getById, update, remove, slugExistForHost, findByHostAndSlug } from '../repositories/event-type.repository';
 import { conflict, forbidden, notFound } from '../utils/api.error';
 import { CreateEventTypeDto, UpdateEventTypeDto } from '../dtos/event-type.dto';
 import slug from "slug";

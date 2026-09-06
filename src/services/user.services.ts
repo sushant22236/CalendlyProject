@@ -1,4 +1,4 @@
-import { create, findByEmail, getAll, getById, update, remove } from '../repositories/user.respositories'
+import { create, findByEmail, getAll, getById, update, remove } from '../repositories/user.repository'
 import { notFound } from '../utils/api.error'
 import { CreateUserDto } from '../dtos/user.dto'
 import { conflict } from '../utils/api.error'
