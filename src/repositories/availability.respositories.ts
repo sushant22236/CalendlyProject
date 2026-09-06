@@ -112,3 +112,17 @@ export async function removeException(id: number) {
     });
     return exception;
 }
+
+export async function findExceptionsByUserInRange(userId: number, startDate: string, endDate: string) {
+    const exceptions = await prisma.availabilityExceptions.findMany({
+        where: {
+            userId,
+            date: {
+                gte: new Date(`${startDate}T00:00:00.000Z`),
+                lte: new Date(`${endDate}T00:00:00.000Z`)
+            }
+        },
+        orderBy: { date: 'asc' }
+    });
+    return exceptions;
+}

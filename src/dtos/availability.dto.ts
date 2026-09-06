@@ -9,7 +9,9 @@ export const createAvailabilityRuleSchema = z.object({
   endTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format. Use HH:MM (e.g. 17:00)"),
   isActive: z.boolean().optional().default(true),
   timezone: z.string().optional().default("UTC"),
-});
+}).refine((rule) => rule.startTime < rule.endTime, {
+  message: "Start time must be less than end time"
+})
 
 export const updateAvailabilityRuleSchema = createAvailabilityRuleSchema.partial();
 
@@ -27,6 +29,26 @@ export const createAvailabilityExceptionSchema = z.object({
   endTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format. Use HH:MM (e.g. 17:00)").optional(),
   timezone: z.string().optional().default("UTC"),
   reason: z.string().optional()
+}).superRefine((data, ctx) => {
+  if (data.type !== 'BLOCK_FULL_DAY') {
+    if (!data.startTime) {
+      ctx.addIssue({ path: ['startTime'], code: 'custom', message: "Start time is required for not full time exception" });
+    }
+    if (!data.endTime) {
+      ctx.addIssue({ path: ['endTime'], code: 'custom', message: "End time is required for not full time exception" });
+    }
+    if (data.startTime && data.endTime && data.startTime >= data.endTime) {
+      ctx.addIssue({ path: ['startTime'], code: 'custom', message: "Start time must be less than end time" });
+    }
+  }
+  if (data.type === 'BLOCK_FULL_DAY') {
+    if (data.startTime) {
+      ctx.addIssue({ path: ['startTime'], code: 'custom', message: "Start time is not required for full day block" });
+    }
+    if (data.endTime) {
+      ctx.addIssue({ path: ['endTime'], code: 'custom', message: "End time is not required for full day block" });
+    }
+  }
 });
 
 export const updateAvailabilityExceptionSchema = createAvailabilityExceptionSchema.partial();
