@@ -1,9 +1,9 @@
-import { prisma } from "../config/database.js";
 import { DateTime } from "luxon";
 import { SLOT_GENERATION_DAYS } from "../config/env.js";
 import { getActiveByUserId as getActiveRulesByUser, findExceptionsByUserInRange } from "../repositories/availability.repository.js";
 import { findActiveEventByHost } from "../repositories/event-type.repository.js";
-import { findBookedSlotsByHostInRange } from "../repositories/slot.repository.js";
+import { findBookedSlotsByHostInRange, upsertAvailableSlot } from "../repositories/slot.repository.js";
+import { getById as getUserById } from "../repositories/user.repository.js";
 import { applyExceptionsForDate, overlapsBooked, splitIntoSlots, TimeWindow, windowsForWeekdayRule } from "./slot-generation.services.js";
 
 export interface RegenerateHostSlotsInput {
@@ -13,7 +13,7 @@ export interface RegenerateHostSlotsInput {
 }
 
 export async function regenerateHostSlots(input: RegenerateHostSlotsInput) {
-    const host = await prisma.user.findUnique({ where: { id: input.hostId } });
+    const host = await getUserById(input.hostId);
     if (!host) return;
 
     const from = input.from
@@ -80,26 +80,7 @@ export async function regenerateHostSlots(input: RegenerateHostSlotsInput) {
 
                 const key = `${eventType.id}|${startAt.toISOString()}|${endAt.toISOString()}`;
 
-
-                await prisma.slot.upsert({
-                    where: {
-                        eventTypeId_startAt_endAt: {
-                            eventTypeId: eventType.id,
-                            startAt,
-                            endAt,
-                        }
-                    },
-                    create: {
-                        hostId: input.hostId,
-                        eventTypeId: eventType.id,
-                        startAt,
-                        endAt,
-                        status: 'AVAILABLE',
-                    },
-                    update: {
-                        status: 'AVAILABLE',
-                    }
-                })
+                await upsertAvailableSlot(input.hostId, eventType.id, startAt, endAt);
             }
         }
 
