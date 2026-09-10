@@ -2,7 +2,7 @@ import { DateTime } from "luxon";
 import { SLOT_GENERATION_DAYS } from "../config/env.js";
 import { getActiveByUserId as getActiveRulesByUser, findExceptionsByUserInRange } from "../repositories/availability.repository.js";
 import { findActiveEventByHost } from "../repositories/event-type.repository.js";
-import { findBookedSlotsByHostInRange, upsertAvailableSlot } from "../repositories/slot.repository.js";
+import { findBookedSlotsByHostInRange, upsertAvailableSlotsBulk } from "../repositories/slot.repository.js";
 import { getById as getUserById } from "../repositories/user.repository.js";
 import { applyExceptionsForDate, overlapsBooked, splitIntoSlots, TimeWindow, windowsForWeekdayRule } from "./slot-generation.services.js";
 
@@ -39,6 +39,8 @@ export async function regenerateHostSlots(input: RegenerateHostSlotsInput) {
             end: DateTime.fromJSDate(slot.endAt, { zone: 'utc' }),
         }
     });
+
+    const slotsToUpsert: { eventTypeId: number, startAt: Date, endAt: Date }[] = [];
 
     for (const eventType of eventTypes) {
 
@@ -78,13 +80,19 @@ export async function regenerateHostSlots(input: RegenerateHostSlotsInput) {
                 const startAt = slot.start.toUTC().toJSDate();
                 const endAt = slot.end.toUTC().toJSDate();
 
-                const key = `${eventType.id}|${startAt.toISOString()}|${endAt.toISOString()}`;
-
-                await upsertAvailableSlot(input.hostId, eventType.id, startAt, endAt);
+                slotsToUpsert.push({
+                    eventTypeId: eventType.id,
+                    startAt,
+                    endAt
+                });
             }
         }
 
 
+    }
+
+    if (slotsToUpsert.length > 0) {
+        await upsertAvailableSlotsBulk(input.hostId, slotsToUpsert);
     }
 
 }
