@@ -1,6 +1,6 @@
 import { proxyActivities } from "@temporalio/workflow";
 
-import type * as activities from "../activites/index.js";
+import type * as activities from "../activites/index.ts";
 import { RegenerateHostSlotsInput } from "../../services/slot.services.js";
 
 

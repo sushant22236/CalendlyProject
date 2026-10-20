@@ -11,3 +11,5 @@ export const SLOT_GENERATION_DAYS = Number(process.env.SLOT_GENERATION_DAYS) || 
 export const TEMPORAL_ADDRESS = process.env.TEMPORAL_ADDRESS || 'localhost:7233';
 export const TEMPORAL_NAMESPACE = process.env.TEMPORAL_NAMESPACE || 'default';
 export const TEMPORAL_TASK_QUEUE = process.env.TEMPORAL_TASK_QUEUE || 'calendly-task';
+
+export const TEMPORAL_ENABLED = 'true';

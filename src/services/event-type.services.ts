@@ -3,6 +3,7 @@ import { conflict, forbidden, notFound } from '../utils/api.error';
 import { CreateEventTypeDto, UpdateEventTypeDto } from '../dtos/event-type.dto';
 import slug from "slug";
 import { getUserById } from './user.services';
+import { startRegenerateHostSlotsWorkflow } from '../temporal/client';
 
 export async function getEventByHostId(hostId: number) {
     const eventTypes = await findByHostId(hostId);
@@ -11,8 +12,8 @@ export async function getEventByHostId(hostId: number) {
 
 
 export async function createEvent(hostId: number, data: CreateEventTypeDto) {
-    const slugPassed = data.slug ?? slug(data.title, {lower: true});
-    if(!slugPassed){
+    const slugPassed = data.slug ?? slug(data.title, { lower: true });
+    if (!slugPassed) {
         throw conflict('Slug is required for event type');
     }
 
@@ -21,7 +22,11 @@ export async function createEvent(hostId: number, data: CreateEventTypeDto) {
         throw conflict('Slug already exists for this host, plase use a different slug');
     }
 
-    return create(hostId, {...data, slug: slugPassed});
+    const eventType = create(hostId, { ...data, slug: slugPassed });
+    await startRegenerateHostSlotsWorkflow({ hostId });
+
+    return eventType;
+
 }
 
 export async function updateEvent(hostId: number, id: number, data: UpdateEventTypeDto) {
@@ -32,7 +37,7 @@ export async function updateEvent(hostId: number, id: number, data: UpdateEventT
     if (eventType.hostId !== hostId) {
         throw forbidden('You are not authorized to update this event type');
     }
-    if(data.slug && data.slug !== eventType.slug){
+    if (data.slug && data.slug !== eventType.slug) {
         const isSlugTaken = await slugExistForHost(hostId, data.slug);
         if (isSlugTaken) {
             throw conflict('Slug already exists for this host, please use a different slug');
@@ -78,7 +83,7 @@ export async function getEventPublic(hostId: number, slug: string) {
         throw notFound('Host not found'); // Host is not active or does not exist
     }
 
-    return{
+    return {
         eventType: {
             id: eventType.id,
             title: eventType.title,

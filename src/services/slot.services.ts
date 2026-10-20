@@ -12,7 +12,7 @@ export interface RegenerateHostSlotsInput {
     to?: string; // YYYY-MM-DD
 }
 
-export async function RegenerateHostSlotsInput(input: RegenerateHostSlotsInput) {
+export async function regenerateHostSlots(input: RegenerateHostSlotsInput) {
     const host = await getUserById(input.hostId);
     if (!host) return;
 
